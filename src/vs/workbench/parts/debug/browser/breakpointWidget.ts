@@ -20,6 +20,8 @@ import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { once } from 'vs/base/common/functional';
 import { attachInputBoxStyler, attachSelectBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { WorkbenchList } from 'vs/platform/list/browser/listService';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 const $ = dom.$;
 const EXPRESSION_PLACEHOLDER = nls.localize('breakpointWidgetExpressionPlaceholder', "Break when expression evaluates to true. 'Enter' to accept, 'esc' to cancel.");
@@ -38,7 +40,8 @@ export class BreakpointWidget extends ZoneWidget {
 	constructor(editor: ICodeEditor, private lineNumber: number, private column: number,
 		@IContextViewService private contextViewService: IContextViewService,
 		@IDebugService private debugService: IDebugService,
-		@IThemeService private themeService: IThemeService
+		@IThemeService private themeService: IThemeService,
+		@IInstantiationService private instantiationService: IInstantiationService
 	) {
 		super(editor, { showFrame: true, showArrow: false, frameWidth: 1 });
 
@@ -71,7 +74,7 @@ export class BreakpointWidget extends ZoneWidget {
 
 		this.hitCountContext = breakpoint && breakpoint.hitCondition && !breakpoint.condition;
 		const selected = this.hitCountContext ? 1 : 0;
-		const selectBox = new SelectBox([nls.localize('expression', "Expression"), nls.localize('hitCount', "Hit Count")], selected, this.contextViewService);
+		const selectBox = new SelectBox([nls.localize('expression', "Expression"), nls.localize('hitCount', "Hit Count")], selected, this.contextViewService, (container, delegate, renderers, options) => this.instantiationService.createInstance(WorkbenchList, container, delegate, renderers, options));
 		this.toDispose.push(attachSelectBoxStyler(selectBox, this.themeService));
 		selectBox.render(dom.append(container, $('.breakpoint-select-container')));
 		selectBox.onDidSelect(e => {

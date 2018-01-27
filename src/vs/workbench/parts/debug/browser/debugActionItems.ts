@@ -20,6 +20,8 @@ import { attachSelectBoxStyler, attachStylerCallback } from 'vs/platform/theme/c
 import { SIDE_BAR_BACKGROUND } from 'vs/workbench/common/theme';
 import { selectBorder } from 'vs/platform/theme/common/colorRegistry';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { WorkbenchList } from 'vs/platform/list/browser/listService';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 const $ = dom.$;
 
@@ -43,9 +45,10 @@ export class StartDebugActionItem implements IActionItem {
 		@IConfigurationService private configurationService: IConfigurationService,
 		@ICommandService private commandService: ICommandService,
 		@IContextViewService contextViewService: IContextViewService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		this.toDispose = [];
-		this.selectBox = new SelectBox([], -1, contextViewService);
+		this.selectBox = new SelectBox([], -1, contextViewService, (container, delegate, renderers, options) => instantiationService.createInstance(WorkbenchList, container, delegate, renderers, options));
 		this.toDispose.push(attachSelectBoxStyler(this.selectBox, themeService, {
 			selectBackground: SIDE_BAR_BACKGROUND
 		}));
@@ -187,9 +190,10 @@ export class FocusProcessActionItem extends SelectActionItem {
 		action: IAction,
 		@IDebugService private debugService: IDebugService,
 		@IThemeService themeService: IThemeService,
+		@IInstantiationService instantiationService: IInstantiationService,
 		@IContextViewService contextViewService: IContextViewService
 	) {
-		super(null, action, [], -1, contextViewService);
+		super(null, action, [], -1, contextViewService, (container, delegate, renderers, options) => instantiationService.createInstance(WorkbenchList, container, delegate, renderers, options));
 
 		this.toDispose.push(attachSelectBoxStyler(this.selectBox, themeService));
 

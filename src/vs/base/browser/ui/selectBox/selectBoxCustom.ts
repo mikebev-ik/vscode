@@ -13,7 +13,7 @@ import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import * as dom from 'vs/base/browser/dom';
 import * as arrays from 'vs/base/common/arrays';
 import { IContextViewProvider } from 'vs/base/browser/ui/contextview/contextview';
-import { List } from 'vs/base/browser/ui/list/listWidget';
+import { List, IListOptions } from 'vs/base/browser/ui/list/listWidget';
 import { IDelegate, IRenderer } from 'vs/base/browser/ui/list/list';
 import { domEvent } from 'vs/base/browser/event';
 import { ScrollbarVisibility } from 'vs/base/common/scrollable';
@@ -29,7 +29,7 @@ export interface ISelectOptionItem {
 	optionDisabled: boolean;
 }
 
-interface ISelectListTemplateData {
+export interface ISelectListTemplateData {
 	root: HTMLElement;
 	optionText: HTMLElement;
 	disposables: IDisposable[];
@@ -69,6 +69,10 @@ class SelectListRenderer implements IRenderer<ISelectOptionItem, ISelectListTemp
 	}
 }
 
+export interface ISelectListCreator {
+	(container: HTMLElement, delegate: IDelegate<ISelectOptionItem>, renderers: IRenderer<ISelectOptionItem, ISelectListTemplateData>[], options?: IListOptions<ISelectOptionItem>): List<ISelectOptionItem>;
+}
+
 export class SelectBoxList implements ISelectBoxDelegate, IDelegate<ISelectOptionItem> {
 
 	private static SELECT_DROPDOWN_BOTTOM_MARGIN = 10;
@@ -88,8 +92,9 @@ export class SelectBoxList implements ISelectBoxDelegate, IDelegate<ISelectOptio
 	private selectList: List<ISelectOptionItem>;
 	private selectDropDownListContainer: HTMLElement;
 	private widthControlElement: HTMLElement;
+	private listCreator: ISelectListCreator;
 
-	constructor(options: string[], selected: number, contextViewProvider: IContextViewProvider, styles: ISelectBoxStyles) {
+	constructor(options: string[], selected: number, contextViewProvider: IContextViewProvider, listCreator: ISelectListCreator, styles: ISelectBoxStyles) {
 
 		this.toDispose = [];
 		this._isVisible = false;
@@ -99,6 +104,8 @@ export class SelectBoxList implements ISelectBoxDelegate, IDelegate<ISelectOptio
 
 		this._onDidSelect = new Emitter<ISelectData>();
 		this.styles = styles;
+
+		this.listCreator = listCreator;
 
 		this.registerListeners();
 		this.constructSelectDropDown(contextViewProvider);
@@ -461,7 +468,7 @@ export class SelectBoxList implements ISelectBoxDelegate, IDelegate<ISelectOptio
 
 		this.listRenderer = new SelectListRenderer();
 
-		this.selectList = new List(this.selectDropDownListContainer, this, [this.listRenderer], {
+		this.selectList = this.listCreator(this.selectDropDownListContainer, this, [this.listRenderer], {
 			useShadows: false,
 			selectOnMouseDown: false,
 			verticalScrollMode: ScrollbarVisibility.Visible,

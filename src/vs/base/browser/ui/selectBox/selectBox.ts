@@ -11,9 +11,9 @@ import { Widget } from 'vs/base/browser/ui/widget';
 import { Color } from 'vs/base/common/color';
 import { deepClone, mixin } from 'vs/base/common/objects';
 import { IContextViewProvider } from 'vs/base/browser/ui/contextview/contextview';
-import { IListStyles } from 'vs/base/browser/ui/list/listWidget';
+import { IListStyles, List } from 'vs/base/browser/ui/list/listWidget';
 import { SelectBoxNative } from 'vs/base/browser/ui/selectBox/selectBoxNative';
-import { SelectBoxList } from 'vs/base/browser/ui/selectBox/selectBoxCustom';
+import { SelectBoxList, ISelectListCreator } from 'vs/base/browser/ui/selectBox/selectBoxCustom';
 import { isMacintosh } from 'vs/base/common/platform';
 
 // Public SelectBox interface - Calls routed to appropriate select implementation class
@@ -52,12 +52,14 @@ export interface ISelectData {
 	index: number;
 }
 
+const DefaultListCreator: ISelectListCreator = (container, delegate, renderers, options) => { return new List(container, delegate, renderers, options); };
+
 export class SelectBox extends Widget implements ISelectBoxDelegate {
 	private toDispose: IDisposable[];
 	private styles: ISelectBoxStyles;
 	private selectBoxDelegate: ISelectBoxDelegate;
 
-	constructor(options: string[], selected: number, contextViewProvider: IContextViewProvider, styles: ISelectBoxStyles = deepClone(defaultStyles)) {
+	constructor(options: string[], selected: number, contextViewProvider: IContextViewProvider, listCreator: ISelectListCreator = DefaultListCreator, styles: ISelectBoxStyles = deepClone(defaultStyles)) {
 		super();
 
 		this.toDispose = [];
@@ -68,7 +70,7 @@ export class SelectBox extends Widget implements ISelectBoxDelegate {
 		if (isMacintosh) {
 			this.selectBoxDelegate = new SelectBoxNative(options, selected, styles);
 		} else {
-			this.selectBoxDelegate = new SelectBoxList(options, selected, contextViewProvider, styles);
+			this.selectBoxDelegate = new SelectBoxList(options, selected, contextViewProvider, listCreator, styles);
 		}
 
 		this.toDispose.push(this.selectBoxDelegate);

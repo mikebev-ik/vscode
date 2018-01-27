@@ -25,6 +25,7 @@ import { IContextViewService } from 'vs/platform/contextview/browser/contextView
 import { ICommandService } from 'vs/platform/commands/common/commands';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 import { PICK_WORKSPACE_FOLDER_COMMAND_ID } from 'vs/workbench/browser/actions/workspaceCommands';
+import { WorkbenchList } from 'vs/platform/list/browser/listService';
 
 export const TERMINAL_PICKER_PREFIX = 'term ';
 
@@ -478,9 +479,10 @@ export class SwitchTerminalInstanceActionItem extends SelectActionItem {
 		action: IAction,
 		@ITerminalService private terminalService: ITerminalService,
 		@IThemeService themeService: IThemeService,
-		@IContextViewService contextViewService: IContextViewService
+		@IContextViewService contextViewService: IContextViewService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
-		super(null, action, terminalService.getInstanceLabels(), terminalService.activeTerminalInstanceIndex, contextViewService);
+		super(null, action, terminalService.getInstanceLabels(), terminalService.activeTerminalInstanceIndex, contextViewService, (container, delegate, renderers, options) => instantiationService.createInstance(WorkbenchList, container, delegate, renderers, options));
 
 		this.toDispose.push(terminalService.onInstancesChanged(this._updateItems, this));
 		this.toDispose.push(terminalService.onActiveInstanceChanged(this._updateItems, this));

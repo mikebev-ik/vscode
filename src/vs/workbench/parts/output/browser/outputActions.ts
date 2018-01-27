@@ -17,6 +17,8 @@ import { attachSelectBoxStyler } from 'vs/platform/theme/common/styler';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
 import { Registry } from 'vs/platform/registry/common/platform';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { WorkbenchList } from 'vs/platform/list/browser/listService';
 
 export class ToggleOutputAction extends TogglePanelAction {
 
@@ -111,9 +113,10 @@ export class SwitchOutputActionItem extends SelectActionItem {
 		action: IAction,
 		@IOutputService private outputService: IOutputService,
 		@IThemeService themeService: IThemeService,
-		@IContextViewService contextViewService: IContextViewService
+		@IContextViewService contextViewService: IContextViewService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
-		super(null, action, [], 0, contextViewService);
+		super(null, action, [], 0, contextViewService, (container, delegate, renderers, options) => instantiationService.createInstance(WorkbenchList, container, delegate, renderers, options));
 
 		let outputChannelRegistry = <IOutputChannelRegistry>Registry.as(OutputExt.OutputChannels);
 		this.toDispose.push(outputChannelRegistry.onDidRegisterChannel(() => this.updateOtions()));
