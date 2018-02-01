@@ -1,4 +1,4 @@
-Mike is really awesome
+Mike FTW
 
 # Visual Studio Code - Open Source
 
