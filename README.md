@@ -1,4 +1,4 @@
-Mike is awesome
+Mike is really awesome
 
 # Visual Studio Code - Open Source
 
